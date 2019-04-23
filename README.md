@@ -9,6 +9,11 @@ This short Python script reads an ical file and sends today's events to a given 
   
 ## Installation
 
+Setup the virtualenv:
+```bash
+virtualenv .env && source .env/bin/activate && pip install -r requirements.txt
+``` 
+
 Copy config.py.dist to config.py and enter ics and mail parameters into config.py.
 
 ## Usage
