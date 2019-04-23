@@ -1,0 +1,4 @@
+.cache
+.idea
+config.py
+venv
