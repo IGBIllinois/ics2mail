@@ -1,4 +1,10 @@
-cal_url = ''
+calendars = [
+    {
+        'url': '',
+        'title': '',
+        'no_recurrence': False
+    },
+]
 mail_from = ''
 mail_to = ''
 mail_subject = ''
@@ -32,6 +38,14 @@ html_template = """\
 </html>
 """
 
+header_text_template = """\
+{:s}:
+
+"""
+header_html_template = """\
+<h4>{:s}<h4>
+"""
+
 event_text_template = """\
 Event:     \t\t{0:s}
 Start:     \t\t{1:%I:%M %p}
@@ -47,6 +61,10 @@ All-day
 Location:  \t{1:s}
 Description:
 {2:s}
+
+"""
+none_text_template = """\
+No Events
 
 """
 
@@ -84,4 +102,13 @@ all_day_html_template = """\
     <th>Description</td><td>{:s}</th>
   </tr>
 </table>
+"""
+
+none_html_template = """\
+<table>
+    <tr>
+        <td>No Events</td>
+    </tr>
+</table>
+
 """
