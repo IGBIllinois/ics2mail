@@ -1,18 +1,18 @@
 #! python
-import datetime
+from datetime import datetime, timedelta
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from icalevents.icalevents import events
-from pytz import timezone
+import pytz
 import config
 import sys
 
 # Calculate today and tomorrow
-now = datetime.datetime.now()
-tz = timezone('US/Central')
-today = datetime.datetime(year=now.year, month=now.month, day=now.day, tzinfo=tz)
-tomorrow = today + datetime.timedelta(days=1)
+tz = pytz.timezone('US/Central')
+now = datetime.now(tz)
+today = tz.localize(datetime(year=now.year, month=now.month, day=now.day+1))
+tomorrow = today + timedelta(days=1)
 
 # Fetch the events
 calendar_events = []
