@@ -7,18 +7,19 @@ from datetime import datetime, timedelta, date
 from dateutil.relativedelta import relativedelta
 from dateutil.rrule import rrule, rruleset, rrulestr
 from dateutil.tz import UTC, gettz
+import pytz
 
 from icalendar import Calendar
 from icalendar.prop import vDDDLists
 
 
-def now():
+def now(tz=UTC):
     """
     Get current time.
 
     :return: now as datetime with timezone
     """
-    return datetime.now(UTC)
+    return datetime.now(tz)
 
 
 class Event:
@@ -62,7 +63,7 @@ class Event:
             return self.start < other.start
 
     def __str__(self):
-        n = now()
+        n = now(self.start.tzinfo)
 
         # compute time delta description
         if not self.all_day:
@@ -184,7 +185,8 @@ def normalize(dt, tz=UTC):
     :return: date as datetime with timezone
     """
     if type(dt) is date:
-        dt = dt + relativedelta(hour=0)
+        dt = datetime(year=dt.year, month=dt.month, day=dt.day)
+        dt.replace(tzinfo=tz)
     elif type(dt) is datetime:
         pass
     else:
@@ -227,6 +229,9 @@ def parse_events(content, start=None, end=None, default_span=timedelta(days=7), 
             break;
     else:
         cal_tz = UTC
+    if cal_tz is None:
+        # Default to local time
+        cal_tz = gettz()
 
     start = normalize(start, cal_tz)
     end = normalize(end, cal_tz)
@@ -235,14 +240,18 @@ def parse_events(content, start=None, end=None, default_span=timedelta(days=7), 
 
     for component in calendar.walk():
         if component.name == "VEVENT":
-            e = create_event(component)
-            if (not no_recurrence) and e.recurring:
-                # Unfold recurring events according to their rrule
-                rule = parse_rrule(component, cal_tz)
-                dur = e.end - e.start
-                found.extend(e.copy_to(dt) for dt in rule.between(start - dur, end, inc=True))
-            elif e.end >= start and e.start <= end:
-                found.append(e)
+            e = create_event(component, cal_tz)
+            if(e.all_day):
+                if normalize(e.end, start.tzinfo) > start and normalize(e.start, end.tzinfo) < end:
+                    found.append(e)
+            else:
+                if (not no_recurrence) and e.recurring:
+                    # Unfold recurring events according to their rrule
+                    rule = parse_rrule(component, cal_tz)
+                    dur = e.end - e.start
+                    found.extend(e.copy_to(dt) for dt in rule.between(start - dur, end, inc=True))
+                elif e.end >= start and e.start <= end:
+                    found.append(e)
     return found
 
 
