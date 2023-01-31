@@ -226,7 +226,7 @@ def parse_events(content, start=None, end=None, default_span=timedelta(days=7), 
     for c in calendar.walk():
         if c.name == 'VTIMEZONE':
             cal_tz = gettz(str(c['TZID']))
-            break;
+            break
     else:
         cal_tz = UTC
     if cal_tz is None:
@@ -242,7 +242,7 @@ def parse_events(content, start=None, end=None, default_span=timedelta(days=7), 
         if component.name == "VEVENT":
             e = create_event(component, cal_tz)
             if(e.all_day):
-                if normalize(e.end, start.tzinfo) >= start and normalize(e.start, end.tzinfo) < end:
+                if normalize(e.end, start.tzinfo) > start and normalize(e.start, end.tzinfo) < end:
                     found.append(e)
             else:
                 if (not no_recurrence) and e.recurring:

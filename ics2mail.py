@@ -6,12 +6,11 @@ from email.mime.text import MIMEText
 from icalevents.icalevents import events
 import pytz
 import config
-import sys
 
 # Calculate today and tomorrow
 tz = pytz.timezone('US/Central')
 now = datetime.now(tz)
-today = tz.localize(datetime(year=now.year, month=now.month, day=now.day+1))
+today = tz.localize(datetime(year=now.year, month=now.month, day=now.day))
 tomorrow = today + timedelta(days=1)
 
 # Fetch the events
