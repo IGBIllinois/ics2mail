@@ -1,17 +1,5 @@
-calendars = [
-    {
-        'url': '',
-        'title': '',
-        'no_recurrence': False
-    },
-]
-mail_from = ''
-mail_to = ''
-mail_subject = ''
-smtp_user = ''
-smtp_pass = ''
-smtp_server = ''
-
+#! python3
+# todo update this nonsense with a jinja2 template
 text_template = "{:s}"
 html_template = """\
 <html>

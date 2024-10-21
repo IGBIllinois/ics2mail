@@ -1,0 +1,11 @@
+mail_from = Do not reply  <do-not-reply@example.com>
+mail_to = somebody@example.com
+mail_subject = Events
+smtp_server = example.com
+smtp_port = 25
+
+[A Calendar]
+url = https://example.com/path/to/calendar.ics
+
+[Another Calendar]
+url = https://foo.com/path/to/calendar.ics

@@ -1,5 +1,5 @@
 .cache
 .idea
-config.py
+config.ini
 venv
 __pycache__
