@@ -5,7 +5,7 @@ This short Python script reads an ical file and sends today's events to a given 
 ## Requirements
 
 - Python 3.x
-  - icalevents
+  - virtualenv
   
 ## Installation
 
@@ -21,10 +21,10 @@ Or, if you're brave, just run install the requirements into your base python ins
 pip install -r requirements.txt
 ```
 
-Copy config.py.dist to config.py and enter ics and mail parameters into config.py.
+Copy config.ini.dist to config.ini and enter ics and mail parameters into config.ini.
 
 ## Usage
 
 ```bash
-source .env/bin/activate && python ics2mail.py
+source .env/bin/activate && python ics2mail.py <config_file>
 ```
