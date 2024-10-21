@@ -1,0 +1,58 @@
+<html>
+  <head>
+    <style>
+      table {
+        margin-bottom: 1.5rem;
+      }
+      th {
+        padding-right: 1rem;
+        text-align: left;
+        vertical-align: top;
+      }
+      td pre {
+        font-family: initial;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+      }
+    </style>
+  </head>
+  <body>
+    {% for name, events in calendars.items() %}
+        <h4>{{name}}</h4>
+        {% for event in events %}
+            <table>
+                <tr>
+                    <th>Event</th><td>{{event.summary}}</td>
+                </tr>
+                {% if event.all_day %}
+                    <tr>
+                        <th colspan="2">All day</th>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <th>Start</th><td>{{event.start.strftime('%I:%M %p')}}</td>
+                    </tr>
+                    <tr>
+                        <th>End</th><td>{{event.end.strftime('%I:%M %p')}}</td>
+                    </tr>
+                {% endif %}
+                <tr>
+                    <th>Location</th><td>{{event.location}}</td>
+                </tr>
+                <tr>
+                    <th>Description</th><td><pre>{{event.description}}</pre></td>
+                </tr>
+            </table>
+        {% else %}
+            <table>
+                <tr>
+                    <td>No Events</td>
+                </tr>
+            </table>
+        {% endfor %}
+        {% if not loop.last %}
+            <hr />
+        {% endif %}
+    {% endfor %}
+  </body>
+</html>

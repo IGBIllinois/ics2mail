@@ -9,10 +9,9 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 import icalendar
+import jinja2
 import pytz
 import recurring_ical_events
-
-import templates
 
 
 def event_value(event, key):
@@ -20,8 +19,10 @@ def event_value(event, key):
 
 
 def main(argv):
-    parser = argparse.ArgumentParser(prog='ics2mail', description='Consumes a number of given ics files and mails today\'s events to a given email address')
-    parser.add_argument('config_file', help='The path to a .ini file to read. See the provided config.ini.dist to get started.')
+    parser = argparse.ArgumentParser(prog='ics2mail',
+                                     description='Consumes a number of given ics files and mails today\'s events to a given email address')
+    parser.add_argument('config_file',
+                        help='The path to a .ini file to read. See the provided config.ini.dist to get started.')
     parser.add_argument("-d", "--date", help='An optional date to check, in the format YYYY-MM-DD. Defaults to today.')
     args = parser.parse_args(argv)
 
@@ -36,12 +37,15 @@ def main(argv):
     # Fetch the events
     should_send_mail = False
 
-    text_body = ""
-    html_body = ""
+    env = jinja2.Environment(
+        loader=jinja2.FileSystemLoader("templates"),
+        autoescape=jinja2.select_autoescape()
+    )
 
     config = configparser.ConfigParser(allow_unnamed_section=True)
     config.read(args.config_file)
 
+    parsed_calendars = {}
     for calendar in config.sections():
         if calendar != configparser.UNNAMED_SECTION:
             print("Fetching events from '{:}'...".format(calendar))
@@ -54,26 +58,17 @@ def main(argv):
             if len(events) > 0:
                 should_send_mail = True
 
-            text_body += templates.header_text_template.format(calendar)
-            html_body += templates.header_html_template.format(calendar)
+            parsed_events = []
             for event in events:
-                if event['X-MICROSOFT-CDO-ALLDAYEVENT'].to_ical() == b'TRUE':
-                    text_body += templates.all_day_text_template.format(event_value(event, 'summary'),
-                                                                        event_value(event, 'location'),
-                                                                        event_value(event, 'description'))
-                    html_body += templates.all_day_html_template.format(event_value(event, 'summary'),
-                                                                        event_value(event, 'location'),
-                                                                        event_value(event, 'description'))
-                else:
-                    text_body += templates.event_text_template.format(event_value(event, 'summary'), event.start,
-                                                                      event.end, event_value(event, 'location'),
-                                                                      event_value(event, 'description'))
-                    html_body += templates.event_html_template.format(event_value(event, 'summary'), event.start,
-                                                                      event.end, event_value(event, 'location'),
-                                                                      event_value(event, 'description'))
-            if len(calendar) == 0:
-                text_body += templates.none_text_template
-                html_body += templates.none_html_template
+                parsed_events.append({
+                    "all_day": event['X-MICROSOFT-CDO-ALLDAYEVENT'].to_ical() == b'TRUE',
+                    "summary": event_value(event, 'summary'),
+                    "location": event_value(event, 'location'),
+                    "description": event_value(event, 'description'),
+                    "start": event.start,
+                    "end": event.end
+                })
+            parsed_calendars[calendar] = parsed_events
 
     # Send the email
     if should_send_mail:
@@ -83,8 +78,11 @@ def main(argv):
         msg['From'] = config.get(configparser.UNNAMED_SECTION, 'mail_from')
         msg['To'] = config.get(configparser.UNNAMED_SECTION, 'mail_to')
 
-        text_body = templates.text_template.format(text_body)
-        html_body = templates.html_template.format(html_body)
+        text_template = env.get_template('main.txt.jinja2')
+        html_template = env.get_template('main.html.jinja2')
+
+        text_body = text_template.render(calendars=parsed_calendars)
+        html_body = html_template.render(calendars=parsed_calendars)
 
         part1 = MIMEText(text_body, 'plain')
         part2 = MIMEText(html_body, 'html')
