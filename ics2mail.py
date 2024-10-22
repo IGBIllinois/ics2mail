@@ -15,7 +15,10 @@ import recurring_ical_events
 
 
 def event_value(event, key):
-    return str(event[key])
+    try:
+        return str(event[key])
+    except KeyError:
+        return ''
 
 
 def main(argv):
@@ -42,12 +45,15 @@ def main(argv):
         autoescape=jinja2.select_autoescape()
     )
 
-    config = configparser.ConfigParser(allow_unnamed_section=True)
+    config = configparser.ConfigParser()
     config.read(args.config_file)
+    mail_section = 'Mail'
+    if not config.has_section(mail_section):
+        sys.exit("No 'Mail' section found in "+args.config_file)
 
     parsed_calendars = {}
     for calendar in config.sections():
-        if calendar != configparser.UNNAMED_SECTION:
+        if calendar != mail_section:
             print("Fetching events from '{:}'...".format(calendar))
 
             f = urllib.request.urlopen(config.get(calendar, 'url'))
@@ -73,10 +79,10 @@ def main(argv):
     # Send the email
     if should_send_mail:
         msg = MIMEMultipart('alternative')
-        msg['Subject'] = '{:s} - {:%A, %B %d, %Y}'.format(config.get(configparser.UNNAMED_SECTION, 'mail_subject'),
+        msg['Subject'] = '{:s} - {:%A, %B %d, %Y}'.format(config.get(mail_section, 'mail_subject'),
                                                           today)
-        msg['From'] = config.get(configparser.UNNAMED_SECTION, 'mail_from')
-        msg['To'] = config.get(configparser.UNNAMED_SECTION, 'mail_to')
+        msg['From'] = config.get(mail_section, 'mail_from')
+        msg['To'] = config.get(mail_section, 'mail_to')
 
         text_template = env.get_template('main.txt.jinja2')
         html_template = env.get_template('main.html.jinja2')
@@ -88,10 +94,10 @@ def main(argv):
         part2 = MIMEText(html_body, 'html')
         msg.attach(part1)
         msg.attach(part2)
-        server = smtplib.SMTP(host=config.get(configparser.UNNAMED_SECTION, 'smtp_server'),
-                              port=config.get(configparser.UNNAMED_SECTION, 'smtp_port', fallback=25))
-        server.sendmail(config.get(configparser.UNNAMED_SECTION, 'mail_from'),
-                        config.get(configparser.UNNAMED_SECTION, 'mail_to'), msg.as_string())
+        server = smtplib.SMTP(host=config.get(mail_section, 'smtp_server'),
+                              port=config.get(mail_section, 'smtp_port', fallback=25))
+        server.sendmail(config.get(mail_section, 'mail_from'),
+                        config.get(mail_section, 'mail_to'), msg.as_string())
         server.quit()
 
 

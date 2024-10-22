@@ -1,14 +1,14 @@
 {% for name, events in calendars.items() %}
 {{name}}:
 
-{% for event in events %}
+{% for event in events -%}
 Event:      {{event.summary}}
-{% if event.all_day %}
+{% if event.all_day -%}
 All-day
-{% else %}
+{% else -%}
 Start:      {{event.start.strftime('%I:%M %p')}}
 End:        {{event.end.strftime('%I:%M %p')}}
-{% endif %}
+{% endif -%}
 Location:   {{event.location}}
 Description:
 {{event.description}}
@@ -16,5 +16,5 @@ Description:
 {% else %}
 No Events
 
-{% endfor %}
-{% endfor %}
+{% endfor -%}
+{% endfor -%}
